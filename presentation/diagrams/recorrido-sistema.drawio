@@ -1,0 +1,79 @@
+<mxfile host="app.diagrams.net" modified="2026-10-07T00:00:00.000Z" agent="RockLogic-Presentacion" version="24.0.0">
+  <diagram id="rocklogic-recorrido" name="Recorrido del sistema">
+    <mxGraphModel dx="1400" dy="820" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1320" pageHeight="720" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Recorrido del usuario en RockLogic — de la planilla al reporte en minutos" style="text;html=1;fontSize=20;fontStyle=1;fontColor=#0f172a;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="200" y="10" width="920" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="band-cliente" value="CLIENTE  ·  WEB (React) y ESCRITORIO (JavaFX)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#94a3b8;dashed=1;fontSize=11;fontColor=#475569;verticalAlign=top;fontStyle=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="1240" height="330" as="geometry" />
+        </mxCell>
+
+        <mxCell id="band-backend" value="BACKEND  ·  API REST Spring Boot (servidor central)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#94a3b8;dashed=1;fontSize=11;fontColor=#475569;verticalAlign=top;fontStyle=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="400" width="1240" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="band-datos" value="DATOS  ·  Aislamiento por empresa y roles" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#94a3b8;dashed=1;fontSize=11;fontColor=#475569;verticalAlign=top;fontStyle=4;" vertex="1" parent="1">
+          <mxGeometry x="40" y="550" width="1240" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s1" value="1 · Inicio de sesión&#10;Admin / Operador&#10;+ token JWT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#f59e0b;strokeWidth=2;fontColor=#ffffff;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" value="2 · Subir archivo&#10;CSV · XLSX · XLS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#f59e0b;strokeWidth=2;fontColor=#ffffff;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="300" y="120" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="3 · Validación&#10;formato y columnas&#10;(errores al instante)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#f59e0b;strokeWidth=2;fontColor=#ffffff;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="520" y="120" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" value="4 · Procesamiento&#10;cálculos por zona&#10;y por estado" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#f59e0b;strokeWidth=2;fontColor=#ffffff;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="740" y="120" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" value="5 · Resultados&#10;KPIs · tablero&#10;· gráficos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#f59e0b;strokeWidth=2;fontColor=#ffffff;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="960" y="120" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" value="6 · Reporte&#10;descarga Excel / PDF" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eab308;strokeColor=#92400e;strokeWidth=2;fontColor=#0f172a;fontStyle=1;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1180" y="120" width="70" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e12" edge="1" parent="1" source="s1" target="s2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#94a3b8;strokeWidth=2;endArrow=block;fontSize=11;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e23" edge="1" parent="1" source="s2" target="s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#94a3b8;strokeWidth=2;endArrow=block;fontSize=11;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e34" edge="1" parent="1" source="s3" target="s4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#94a3b8;strokeWidth=2;endArrow=block;fontSize=11;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e45" edge="1" parent="1" source="s4" target="s5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#94a3b8;strokeWidth=2;endArrow=block;fontSize=11;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e56" edge="1" parent="1" source="s5" target="s6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#94a3b8;strokeWidth=2;endArrow=block;fontSize=11;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="hist" value="Sin archivos encontrados → historial completo con estado OK / ERROR y trazabilidad de cada corrida" style="text;html=1;fontSize=12;fontColor=#475569;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="1170" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rej" value="Endpoints REST /api:  auth · dashboard · admin/users · admin/equipments · proceso de archivos · descarga de reportes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#94a3b8;fontColor=#e2e8f0;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="80" y="430" width="1160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="emp1" value="Minera Andina&#10;Admin · Operador" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#cbd5e1;fontColor=#0f172a;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="80" y="600" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="emp2" value="Minera del Sur&#10;Admin · Operador" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1f5f9;strokeColor=#cbd5e1;fontColor=#0f172a;fontSize=12;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="430" y="600" width="300" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="iso" value="Cada usuario solo ve los datos de su empresa (aislamiento por tenant)" style="text;html=1;fontSize=12;fontColor=#475569;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="780" y="610" width="460" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

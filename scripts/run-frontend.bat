@@ -9,4 +9,4 @@ if not exist node_modules (
 )
 start "MineOps Web" cmd /c "cd /d ""%ROOT%\frontend"" & set ""PATH=C:\Program Files\nodejs;%PATH%"" & npm.cmd run dev"
 echo Frontend iniciado. Abri el navegador en: http://localhost:5173
-timeout /t 3 >nul
+ping -n 4 127.0.0.1 >nul

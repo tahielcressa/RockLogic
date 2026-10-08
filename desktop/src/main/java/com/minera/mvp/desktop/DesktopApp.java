@@ -2,14 +2,26 @@ package com.minera.mvp.desktop;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -17,6 +29,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.awt.Desktop;
@@ -31,9 +44,11 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DesktopApp extends Application {
 
     private static final String API = "http://localhost:8080/api";
+    private static final double W = 1180;
+    private static final double H = 740;
 
     private final ApiClient api = new ApiClient(API);
-    private Stage stage;
+    private Scene scene;
     private Map<String, Object> user;
     private String lastRunId = "";
     private final List<Button> navButtons = new ArrayList<>();
@@ -44,40 +59,145 @@ public class DesktopApp extends Application {
 
     @Override
     public void start(Stage stage) {
-        this.stage = stage;
-        stage.setTitle("MineOps - Sistema de escritorio");
-        stage.setMinWidth(1000);
-        stage.setMinHeight(650);
-        showLogin();
+        stage.setTitle("RockLogic - Sistema de escritorio");
+        stage.setMinWidth(W);
+        stage.setMinHeight(H);
+        scene = new Scene(new VBox(), W, H);
+        scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        stage.setScene(scene);
         stage.show();
+        showLogin();
+    }
+
+    // ===================== UTILIDADES UI =====================
+
+    private Label label(String text) {
+        return new Label(text);
+    }
+
+    private Label label(String text, String styleClass) {
+        Label l = new Label(text);
+        l.getStyleClass().add(styleClass);
+        return l;
+    }
+
+    private void styleField(TextField f) {
+        f.getStyleClass().add("field");
+        f.setMaxWidth(Double.MAX_VALUE);
+    }
+
+    private void styleField(PasswordField f) {
+        f.getStyleClass().add("field");
+        f.setMaxWidth(Double.MAX_VALUE);
+    }
+
+    private VBox title(String t, String sub) {
+        VBox v = new VBox(4);
+        v.getChildren().add(label(t, "page-title"));
+        v.getChildren().add(label(sub, "page-subtitle"));
+        VBox.setMargin(v, new Insets(0, 0, 16, 0));
+        return v;
+    }
+
+    private VBox card(String titleText, String text) {
+        VBox v = new VBox(8);
+        v.getStyleClass().add("card");
+        v.getChildren().add(label(titleText, "card-title"));
+        v.getChildren().add(label(text, "card-text"));
+        return v;
+    }
+
+    private VBox cardOnly(String titleText, Region body) {
+        VBox v = new VBox(8);
+        v.getStyleClass().add("card");
+        v.getChildren().add(label(titleText, "card-title"));
+        v.getChildren().add(body);
+        return v;
+    }
+
+    private VBox kpi(String labelText, String value) {
+        VBox v = new VBox(6);
+        v.getStyleClass().add("kpi-card");
+        v.getChildren().add(label(value, "kpi-value"));
+        v.getChildren().add(label(labelText, "kpi-label"));
+        return v;
+    }
+
+    private Label statusPill(String status) {
+        String cls;
+        switch (status == null ? "" : status) {
+            case "OK" -> cls = "pill-ok";
+            case "ERROR" -> cls = "pill-err";
+            case "EJECUTANDO" -> cls = "pill-run";
+            default -> cls = "pill-rec";
+        }
+        Label p = label(status == null ? "—" : status, "pill " + cls);
+        p.setAlignment(Pos.CENTER);
+        return p;
+    }
+
+    private TextArea makeLogArea() {
+        TextArea a = new TextArea();
+        a.getStyleClass().add("log-area");
+        a.setEditable(false);
+        a.setWrapText(true);
+        a.setPrefHeight(180);
+        return a;
+    }
+
+    private void loading(VBox content) {
+        content.getChildren().clear();
+        ProgressIndicator pi = new ProgressIndicator();
+        pi.setPrefSize(42, 42);
+        VBox v = new VBox(10, pi, label("Cargando...", "note"));
+        v.setAlignment(Pos.CENTER);
+        content.getChildren().add(v);
+    }
+
+    private void error(VBox content, String message) {
+        content.getChildren().clear();
+        Label l = label(message, "error-text");
+        l.setWrapText(true);
+        content.getChildren().add(l);
+    }
+
+    private String idleStyle() {
+        return "nav-btn";
     }
 
     // ===================== LOGIN =====================
 
     private void showLogin() {
-        Label title = label("MineOps", "-fx-font-size:26px; -fx-font-weight:bold; -fx-text-fill:#1e293b;");
-        Label subtitle = label("Cliente de escritorio de operaciones mineras",
-                "-fx-text-fill:#64748b;");
+        Label appTitle = label("RockLogic", "app-title");
+        Label appSub = label("Gestión inteligente de operaciones mineras", "app-subtitle");
+
+        HBox brand = new HBox(12, chip("R"), new VBox(2, appTitle, appSub));
+        brand.setAlignment(Pos.CENTER_LEFT);
+        brand.setPadding(new Insets(0, 0, 28, 0));
+
+        Label formTitle = label("Iniciar sesión", "form-title");
+        Label formSub = label("Accede a tu empresa y a sus datos", "form-subtitle");
 
         TextField email = new TextField();
         email.setPromptText("Email");
         email.setText("admin@mineraandina.com");
-        styleInput(email);
+        styleField(email);
 
         PasswordField password = new PasswordField();
         password.setPromptText("Contraseña");
         password.setText("admin123");
-        styleInput(password);
+        styleField(password);
 
-        Label error = label("", "-fx-text-fill:#dc2626;");
-        Label ok = label("", "-fx-text-fill:#16a34a;");
+        Label error = label("", "error-text");
+        Label ok = label("", "ok-text");
+        Label demoTxt = label("CUENTAS DE PRUEBA", "note");
 
         Button btn = new Button("Ingresar");
+        btn.getStyleClass().add("btn-primary");
         btn.setMaxWidth(Double.MAX_VALUE);
-        btn.setStyle(primaryStyle());
 
         Button checkServer = new Button("Comprobar servidor");
-        checkServer.setStyle("-fx-background-color:transparent; -fx-text-fill:#2563eb; -fx-cursor:hand;");
+        checkServer.getStyleClass().add("btn-ghost");
 
         btn.setOnAction(e -> {
             btn.setDisable(true);
@@ -94,6 +214,7 @@ public class DesktopApp extends Application {
                     });
                 } catch (Exception ex) {
                     Platform.runLater(() -> {
+                        showErrorAlert("No se pudo iniciar sesión", ex.getMessage());
                         error.setText(ex.getMessage());
                         btn.setDisable(false);
                     });
@@ -120,24 +241,54 @@ public class DesktopApp extends Application {
             Platform.runLater(() -> ok.setText(out));
         }).start());
 
-        VBox box = new VBox(12, title, subtitle, email, password, error, btn, checkServer, ok);
-        box.setAlignment(Pos.CENTER);
-        box.setPadding(new javafx.geometry.Insets(40));
-        box.setMaxWidth(380);
-        box.setStyle("-fx-background-color:white; -fx-background-radius:16; "
-                + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 24, 0.2, 0, 6);");
+        String[] demoLabels = { "Admin", "Operador", "Otra empresa" };
+        String[][] demos = {
+                { "admin@mineraandina.com", "admin123" },
+                { "operador@mineraandina.com", "oper123" },
+                { "admin@minadelsur.com", "admin123" },
+        };
+
+        HBox demosBox = new HBox(8);
+        for (int i = 0; i < demoLabels.length; i++) {
+            int idx = i;
+            Button d = new Button(demoLabels[i]);
+            d.getStyleClass().add("demo-chip");
+            d.setOnAction(ev -> {
+                email.setText(demos[idx][0]);
+                password.setText(demos[idx][1]);
+                error.setText("");
+                ok.setText("");
+            });
+            demosBox.getChildren().add(d);
+        }
+
+        VBox form = new VBox(12,
+                brand,
+                formTitle, formSub, email, password,
+                error, ok, btn, checkServer,
+                new Separator(), demoTxt, demosBox);
+        form.setMaxWidth(420);
+        form.getStyleClass().add("login-card");
 
         Region spacer1 = new Region();
         Region spacer2 = new Region();
         HBox.setHgrow(spacer1, Priority.ALWAYS);
         HBox.setHgrow(spacer2, Priority.ALWAYS);
-        HBox wrap = new HBox(spacer1, box, spacer2);
+        HBox wrap = new HBox(spacer1, form, spacer2);
         VBox.setVgrow(wrap, Priority.ALWAYS);
+
         VBox root = new VBox(wrap);
-        root.setStyle("-fx-background-color: linear-gradient(to bottom right, #0f172a, #26355c);");
-        stage.setScene(new Scene(root, 1000, 650));
+        root.getStyleClass().add("login-bg");
+        scene.setRoot(root);
+
         email.setOnAction(e -> password.requestFocus());
         password.setOnAction(e -> btn.fire());
+    }
+
+    private Label chip(String text) {
+        Label c = label(text, "brand-chip");
+        c.setAlignment(Pos.CENTER);
+        return c;
     }
 
     // ===================== PRINCIPAL =====================
@@ -146,16 +297,34 @@ public class DesktopApp extends Application {
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color:#f1f5f9;");
 
-        VBox sidebar = new VBox(6);
-        sidebar.setPadding(new javafx.geometry.Insets(16));
-        sidebar.setStyle("-fx-background-color:#0f172a;");
-        sidebar.setPrefWidth(230);
+        VBox content = new VBox();
+        content.setPadding(new Insets(24, 28, 24, 28));
+        content.setSpacing(16);
 
-        Label brand = label("⛏  MineOps", "-fx-text-fill:white; -fx-font-size:19px; -fx-font-weight:bold;");
-        Label company = label("Empresa: " + str(user, "companyName"),
-                "-fx-text-fill:#94a3b8; -fx-font-size:11px; -fx-wrap-text:true;");
-        Label userLine = label(str(user, "fullName") + " · " + str(user, "role"),
-                "-fx-text-fill:#cbd5e1; -fx-font-size:11px;");
+        VBox sidebar = buildSidebar(content);
+
+        ScrollPane scroll = new ScrollPane(content);
+        scroll.setFitToWidth(true);
+        scroll.getStyleClass().add("scroll-pane");
+
+        root.setLeft(sidebar);
+        root.setCenter(scroll);
+        scene.setRoot(root);
+
+        activateNav(navButtons.get(0));
+        showDashboard(content);
+    }
+
+    private VBox buildSidebar(VBox content) {
+        VBox sidebar = new VBox(10);
+        sidebar.setPadding(new Insets(16));
+        sidebar.setPrefWidth(252);
+        sidebar.getStyleClass().add("sidebar");
+
+        HBox brandRow = new HBox(10, chip("R"),
+                new VBox(2, label("RockLogic", "sidebar-brand"),
+                        label("Gestión de operaciones mineras", "sidebar-sub")));
+        brandRow.setAlignment(Pos.CENTER_LEFT);
 
         Button dashBtn = navButton("Dashboard");
         Button uploadBtn = navButton("Cargar archivo");
@@ -166,56 +335,62 @@ public class DesktopApp extends Application {
         navButtons.add(histBtn);
 
         Button logoutBtn = new Button("Cerrar sesión");
-        logoutBtn.setMaxWidth(Double.MAX_VALUE);
-        logoutBtn.setStyle("-fx-background-color:#334155; -fx-text-fill:white; -fx-cursor:hand; "
-                + "-fx-background-radius:8; -fx-padding:10;");
+        logoutBtn.getStyleClass().add("logout-btn");
+        logoutBtn.setOnAction(e -> {
+            user = null;
+            api.setToken("");
+            showLogin();
+        });
 
-        VBox content = new VBox();
-        content.setPadding(new javafx.geometry.Insets(24));
-        ScrollPane scroll = new ScrollPane(content);
-        scroll.setFitToWidth(true);
-        scroll.setStyle("-fx-background-color:transparent;");
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+
+        VBox userCard = buildUserCard();
+        sidebar.getChildren().addAll(brandRow, new Separator(),
+                dashBtn, uploadBtn, histBtn, spacer, userCard, logoutBtn);
 
         dashBtn.setOnAction(e -> { activateNav(dashBtn); showDashboard(content); });
         uploadBtn.setOnAction(e -> { activateNav(uploadBtn); showUpload(content); });
         histBtn.setOnAction(e -> { activateNav(histBtn); showHistory(content); });
 
-        Region spacer = new Region();
-        VBox.setVgrow(spacer, Priority.ALWAYS);
-        sidebar.getChildren().addAll(brand, company, userLine, new Separator(),
-                dashBtn, uploadBtn, histBtn, spacer, logoutBtn);
-
-        logoutBtn.setOnAction(e -> { user = null; api.setToken(""); showLogin(); });
-
-        root.setLeft(sidebar);
-        root.setCenter(scroll);
-        stage.setScene(new Scene(root, 1100, 700));
-
-        activateNav(dashBtn);
-        showDashboard(content);
+        return sidebar;
     }
 
-    private void activateNav(Button activeBtn) {
-        for (Button b : navButtons) {
-            b.setStyle(b == activeBtn ? activeStyle() : idleStyle());
-        }
-    }
+    private VBox buildUserCard() {
+        Label avatar = label(str(user, "fullName").isEmpty() ? "U"
+                : str(user, "fullName").substring(0, 1).toUpperCase(), "user-avatar");
 
-    private String idleStyle() {
-        return "-fx-background-color:transparent; -fx-text-fill:#cbd5e1; -fx-font-size:14px; "
-                + "-fx-alignment:CENTER-LEFT; -fx-padding:10 14; -fx-background-radius:8; -fx-cursor:hand;";
-    }
+        VBox info = new VBox(1,
+                label(str(user, "fullName"), "user-name"),
+                label(str(user, "role"), "user-role"));
 
-    private String activeStyle() {
-        return "-fx-background-color:#f59e0b; -fx-text-fill:#1e293b; -fx-font-weight:bold; "
-                + "-fx-font-size:14px; -fx-alignment:CENTER-LEFT; -fx-padding:10 14; -fx-background-radius:8;";
+        HBox card = new HBox(10, avatar, info);
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.getStyleClass().add("user-card");
+
+        Label tenant = label("MULTI-TENANT", "tenant-pill");
+        tenant.setAlignment(Pos.CENTER);
+
+        VBox userCard = new VBox(8, card, tenant);
+        return userCard;
     }
 
     private Button navButton(String text) {
         Button b = new Button(text);
         b.setMaxWidth(Double.MAX_VALUE);
-        b.setStyle(idleStyle());
+        b.getStyleClass().add(idleStyle());
         return b;
+    }
+
+    private void activateNav(Button activeBtn) {
+        for (Button b : navButtons) {
+            if (b == activeBtn) {
+                b.getStyleClass().removeAll("nav-btn-active");
+                b.getStyleClass().add("nav-btn-active");
+            } else {
+                b.getStyleClass().remove("nav-btn-active");
+            }
+        }
     }
 
     // ===================== DASHBOARD =====================
@@ -225,58 +400,113 @@ public class DesktopApp extends Application {
         new Thread(() -> {
             try {
                 Map<String, Object> d = api.get("/dashboard");
-                Platform.runLater(() -> {
-                    content.getChildren().clear();
-                    content.getChildren().add(title("Dashboard de operación",
-                            "Resumen de los procesos de " + str(user, "companyName")));
-
-                    HBox cards = new HBox(12);
-                    cards.getChildren().add(kpi("Procesos", str(d, "totalRuns")));
-                    cards.getChildren().add(kpi("Filas válidas", str(d, "validRows")));
-                    cards.getChildren().add(kpi("Filas inválidas", str(d, "invalidRows")));
-                    cards.getChildren().add(kpi("Tonelaje (t)", str(d, "totalTonnage")));
-                    cards.getChildren().add(kpi("Ley media Cu", str(d, "avgGrade")));
-                    content.getChildren().add(cards);
-
-                    content.getChildren().add(card("Tonelaje por zona", zonesText(d)));
-                    content.getChildren().add(card("Filas por estado", estadosText(d)));
-                    content.getChildren().add(card("Últimas ejecuciones", recentRunsText(d)));
-                });
+                Platform.runLater(() -> content.getChildren().setAll(buildDashboard(d)));
             } catch (Exception ex) {
                 Platform.runLater(() -> error(content, "No se pudo cargar el dashboard: " + ex.getMessage()));
             }
         }).start();
     }
 
-    private String zonesText(Map<String, Object> d) {
-        StringBuilder sb = new StringBuilder();
-        for (Object o : list(d.get("perZone"))) {
-            Map<String, Object> z = castMap(o);
-            sb.append("• ").append(str(z, "name")).append(": ").append(dnum(z, "value")).append(" t\n");
-        }
-        return sb.length() == 0 ? "Sin datos todavía. Carga tu primer archivo." : sb.toString();
+    private List<Node> buildDashboard(Map<String, Object> d) {
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(title("Dashboard de operación", "Resumen de los procesos de " + str(user, "companyName")));
+
+        HBox cards = new HBox(12);
+        cards.getChildren().add(kpi("Procesos", str(d, "totalRuns")));
+        cards.getChildren().add(kpi("Filas válidas", str(d, "validRows")));
+        cards.getChildren().add(kpi("Filas inválidas", str(d, "invalidRows")));
+        cards.getChildren().add(kpi("Tonelaje (t)", str(d, "totalTonnage")));
+        cards.getChildren().add(kpi("Ley media Cu (%)", str(d, "avgGrade")));
+        nodes.add(cards);
+
+        HBox charts = new HBox(16);
+        charts.getChildren().add(cardChart("Tonelaje por zona",
+                "En toneladas, según las filas válidas", zonesChart(list(d.get("perZone")))));
+        charts.getChildren().add(cardChart("Filas por estado",
+                "Distribución de equipos EN_PROCESO / DETENIDO", estadosChart(list(d.get("perEstado")))));
+        nodes.add(charts);
+
+        nodes.add(cardRecent("Últimas ejecuciones", recentRunsBox(list(d.get("recentRuns")))));
+        return nodes;
     }
 
-    private String estadosText(Map<String, Object> d) {
-        StringBuilder sb = new StringBuilder();
-        for (Object o : list(d.get("perEstado"))) {
-            Map<String, Object> z = castMap(o);
-            sb.append("• ").append(str(z, "name")).append(": ").append(lnum(z, "value")).append(" filas\n");
+    private VBox cardChart(String titleText, String sub, Node body) {
+        VBox v = new VBox(6);
+        v.getStyleClass().add("card");
+        VBox.setVgrow(v, Priority.ALWAYS);
+        v.getChildren().add(label(titleText, "card-title"));
+        v.getChildren().add(label(sub, "note"));
+        if (body instanceof Region r) {
+            HBox.setHgrow(r, Priority.ALWAYS);
         }
-        return sb.length() == 0 ? "Sin datos." : sb.toString();
+        v.getChildren().add(body);
+        return v;
     }
 
-    private String recentRunsText(Map<String, Object> d) {
-        StringBuilder sb = new StringBuilder();
-        for (Object o : list(d.get("recentRuns"))) {
+    private Node zonesChart(List<Object> perZone) {
+        CategoryAxis xAxis = new CategoryAxis();
+        xAxis.setLabel("Zona");
+        NumberAxis yAxis = new NumberAxis();
+        yAxis.setLabel("Tonelaje (t)");
+        BarChart<String, Number> chart = new BarChart<>(xAxis, yAxis);
+        chart.setAnimated(false);
+        chart.setLegendVisible(false);
+        chart.setTitle(null);
+        XYChart.Series<String, Number> series = new XYChart.Series<>();
+        for (Object o : perZone) {
+            Map<String, Object> z = castMap(o);
+            series.getData().add(new XYChart.Data<>(str(z, "name"), dnum(z, "value")));
+        }
+        chart.getData().add(series);
+        chart.setPrefHeight(260);
+        return chart;
+    }
+
+    private Node estadosChart(List<Object> perEstado) {
+        PieChart chart = new PieChart();
+        chart.setAnimated(false);
+        chart.setStartAngle(90);
+        chart.setLegendVisible(true);
+        chart.setTitle(null);
+        for (Object o : perEstado) {
+            Map<String, Object> z = castMap(o);
+            chart.getData().add(new PieChart.Data(str(z, "name"), lnum(z, "value")));
+        }
+        chart.setPrefHeight(260);
+        return chart;
+    }
+
+    private VBox cardRecent(String titleText, Node body) {
+        VBox v = new VBox(10);
+        v.getStyleClass().add("card");
+        v.getChildren().add(label(titleText, "card-title"));
+        v.getChildren().add(body);
+        return v;
+    }
+
+    private VBox recentRunsBox(List<Object> runs) {
+        VBox box = new VBox(6);
+        if (runs.isEmpty()) {
+            box.getChildren().add(label("Sin procesos todavía. Carga tu primer archivo.", "card-text"));
+            return box;
+        }
+        for (Object o : runs) {
             Map<String, Object> r = castMap(o);
-            sb.append("[").append(str(r, "status")).append("] ").append(str(r, "originalName"))
-                    .append(" → ").append(lnum(r, "validRows")).append(" válidas / ")
-                    .append(lnum(r, "invalidRows")).append(" inválidas · ")
-                    .append(str(r, "totalTonnage")).append(" t · ")
-                    .append(str(r, "executedByName")).append("\n");
+            HBox row = new HBox(12);
+            row.setAlignment(Pos.CENTER_LEFT);
+            row.getChildren().add(statusPill(str(r, "status")));
+            Label file = label(str(r, "originalName"));
+            file.getStyleClass().add("card-text");
+            file.setMaxWidth(280);
+            HBox.setHgrow(file, Priority.ALWAYS);
+            row.getChildren().add(file);
+            row.getChildren().add(label(lnum(r, "validRows") + " vál. / "
+                    + lnum(r, "invalidRows") + " invál.", "note"));
+            row.getChildren().add(label(str(r, "totalTonnage") + " t · "
+                    + str(r, "executedByName"), "note"));
+            box.getChildren().add(row);
         }
-        return sb.length() == 0 ? "Sin procesos todavía." : sb.toString();
+        return box;
     }
 
     // ===================== SUBIR ARCHIVO =====================
@@ -286,25 +516,27 @@ public class DesktopApp extends Application {
         content.getChildren().add(title("Cargar datos de operación",
                 "Sube un CSV o Excel. El sistema valida, transforma y cruza con el catálogo."));
 
-        VBox box = new VBox(14);
-        box.setStyle(cardStyle());
-        Label fileLbl = label("Ningún archivo seleccionado", "-fx-text-fill:#64748b;");
+        VBox box = new VBox(12);
+        box.getStyleClass().add("card");
+
+        Label fileLbl = label("Ningún archivo seleccionado", "card-text");
         AtomicReference<Path> chosen = new AtomicReference<>();
 
         Button runBtn = new Button("Subir y procesar");
-        runBtn.setStyle(primaryStyle());
+        runBtn.getStyleClass().add("btn-primary");
         runBtn.setDisable(true);
+
         Button reportBtn = new Button("Descargar Excel y PDF");
-        reportBtn.setStyle(secondaryStyle());
+        reportBtn.getStyleClass().add("btn-success");
         reportBtn.setDisable(true);
 
         Button select = new Button("Elegir archivo (.csv / .xlsx)");
-        select.setStyle(primaryStyle());
+        select.getStyleClass().add("btn-secondary");
         select.setOnAction(e -> {
-            javafx.stage.FileChooser fc = new javafx.stage.FileChooser();
+            FileChooser fc = new FileChooser();
             fc.getExtensionFilters().add(
-                    new javafx.stage.FileChooser.ExtensionFilter("Excel y CSV", "*.csv", "*.xlsx", "*.xls"));
-            File f = fc.showOpenDialog(stage);
+                    new FileChooser.ExtensionFilter("Excel y CSV", "*.csv", "*.xlsx", "*.xls"));
+            File f = fc.showOpenDialog(scene.getWindow());
             if (f != null) {
                 chosen.set(f.toPath());
                 runBtn.setDisable(false);
@@ -312,8 +544,8 @@ public class DesktopApp extends Application {
             }
         });
 
-        Label msg = label("", "-fx-text-fill:#16a34a; -fx-wrap-text:true;");
-        Label err = label("", "-fx-text-fill:#dc2626; -fx-wrap-text:true;");
+        Label msg = label("", "ok-text");
+        Label err = label("", "error-text");
         ProgressIndicator progress = new ProgressIndicator();
         progress.setPrefSize(22, 22);
         progress.setVisible(false);
@@ -322,6 +554,7 @@ public class DesktopApp extends Application {
             Path file = chosen.get();
             if (file == null) return;
             runBtn.setDisable(true);
+            reportBtn.setDisable(true);
             progress.setVisible(true);
             msg.setText("");
             err.setText("");
@@ -334,12 +567,13 @@ public class DesktopApp extends Application {
                         runBtn.setDisable(false);
                         lastRunId = String.valueOf(run.get("id"));
                         if ("ERROR".equals(str(run, "status"))) {
-                            err.setText(logs(run));
+                            err.setText("El proceso falló: " + logs(run));
                         } else {
-                            msg.setText("Proceso OK → " + str(run, "validRows") + " válidas, "
+                            msg.setText("✓ Proceso OK · " + str(run, "validRows") + " válidas, "
                                     + str(run, "invalidRows") + " inválidas · "
                                     + str(run, "totalTonnage") + " t · ley "
-                                    + str(run, "avgGrade") + " %");
+                                    + str(run, "avgGrade") + " % · "
+                                    + (dnum(run, "durationMs") / 1000.0) + " s");
                             reportBtn.setDisable(false);
                         }
                     });
@@ -368,13 +602,18 @@ public class DesktopApp extends Application {
         HBox buttons = new HBox(10, select, runBtn, reportBtn);
         buttons.setAlignment(Pos.CENTER_LEFT);
         box.getChildren().addAll(fileLbl, buttons, progress, msg, err);
-        content.getChildren().add(box);
 
+        VBox formatCard = new VBox(8);
+        formatCard.getStyleClass().add("card-dark");
         TextArea format = new TextArea(formatHelp());
+        format.getStyleClass().add("log-area");
         format.setEditable(false);
         format.setWrapText(true);
-        format.setPrefHeight(170);
-        content.getChildren().add(cardOnly("Formato esperado", format));
+        format.setPrefHeight(180);
+        formatCard.getChildren().add(label("Formato esperado", "card-title-light"));
+        formatCard.getChildren().add(format);
+
+        content.getChildren().addAll(box, formatCard);
     }
 
     private String formatHelp() {
@@ -382,6 +621,7 @@ public class DesktopApp extends Application {
                 + "Reglas que aplica el sistema:\n"
                 + "  • fecha: 12/09/2026 o 2026-09-12\n"
                 + "  • turno: A, B o C\n"
+                + "  • zona: Norte, Sur, Este, Oeste, Centro\n"
                 + "  • tonelaje: mayor a 0 y menor a 100000 (acepta coma o punto decimal)\n"
                 + "  • ley_cu: entre 0 y 100\n"
                 + "  • equipo: debe existir en el catálogo de tu empresa\n\n"
@@ -390,122 +630,96 @@ public class DesktopApp extends Application {
 
     // ===================== HISTORIAL =====================
 
+    @SuppressWarnings("unchecked")
     private void showHistory(VBox content) {
         loading(content);
         new Thread(() -> {
             try {
                 List<Object> runs = api.getList("/runs");
-                Platform.runLater(() -> {
-                    content.getChildren().clear();
-                    content.getChildren().add(title("Historial de ejecuciones",
-                            "Cada proceso guarda resultados, KPIs, log y reportes."));
-                    if (runs.isEmpty()) {
-                        content.getChildren().add(card("Historial", "Sin procesos todavía."));
-                        return;
-                    }
-                    StringBuilder sb = new StringBuilder();
-                    for (Object o : runs) {
-                        Map<String, Object> r = castMap(o);
-                        sb.append("━━━━━━━━━━━━━━━━━━━━━━━━━━\n")
-                                .append("#").append(str(r, "id")).append("  [").append(str(r, "status")).append("]\n")
-                                .append("Archivo: ").append(str(r, "originalName")).append("\n")
-                                .append("Fecha: ").append(str(r, "finishedAt")).append("\n")
-                                .append("Válidas/Inválidas: ").append(str(r, "validRows")).append(" / ")
-                                .append(str(r, "invalidRows")).append("\n")
-                                .append("Tonelaje: ").append(str(r, "totalTonnage")).append(" t · Ley: ")
-                                .append(str(r, "avgGrade")).append(" %\n")
-                                .append("Duración: ").append(dnum(r, "durationMs") / 1000.0).append(" s · Usuario: ")
-                                .append(str(r, "executedByName")).append("\n")
-                                .append("Reportes: ").append(str(r, "excelFileName")).append(" / ")
-                                .append(str(r, "pdfFileName")).append("\n")
-                                .append("Log:\n").append(logs(r)).append("\n");
-                    }
-                    TextArea area = new TextArea(sb.toString());
-                    area.setEditable(false);
-                    area.setPrefHeight(460);
-                    content.getChildren().add(cardOnly("Detalle", area));
-                });
+                List<Map<String, Object>> rows = new ArrayList<>();
+                for (Object o : runs) rows.add(castMap(o));
+                Platform.runLater(() -> content.getChildren().setAll(buildHistory(rows)));
             } catch (Exception ex) {
                 Platform.runLater(() -> error(content, "No se pudo cargar el historial: " + ex.getMessage()));
             }
         }).start();
     }
 
-    // ===================== HELPERS UI =====================
+    private List<Node> buildHistory(List<Map<String, Object>> rows) {
+        List<Node> nodes = new ArrayList<>();
+        nodes.add(title("Historial de ejecuciones",
+                "Cada proceso guarda resultados, KPIs, log y reportes."));
 
-    private VBox title(String t, String sub) {
-        VBox v = new VBox(4);
-        v.getChildren().add(label(t, "-fx-font-size:22px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"));
-        v.getChildren().add(label(sub, "-fx-text-fill:#64748b;"));
-        VBox.setMargin(v, new javafx.geometry.Insets(0, 0, 10, 0));
-        return v;
-    }
+        if (rows.isEmpty()) {
+            nodes.add(card("Historial", "Sin procesos todavía. Sube tu primer archivo en 'Cargar archivo'."));
+            return nodes;
+        }
 
-    private VBox card(String title, String text) {
-        VBox v = new VBox(8);
-        v.setStyle(cardStyle());
-        v.getChildren().add(label(title, "-fx-font-size:15px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"));
-        v.getChildren().add(label(text, "-fx-text-fill:#475569; -fx-wrap-text:true; -fx-font-size:13px;"));
-        return v;
-    }
+        TableView<Map<String, Object>> table = new TableView<>();
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        table.setPlaceholder(new Label("No hay procesos"));
 
-    private VBox cardOnly(String title, Region body) {
-        VBox v = new VBox(8);
-        v.setStyle(cardStyle());
-        v.getChildren().add(label(title, "-fx-font-size:15px; -fx-font-weight:bold; -fx-text-fill:#0f172a;"));
-        v.getChildren().add(body);
-        return v;
-    }
+        TableColumn<Map<String, Object>, String> colArchivo = new TableColumn<>("Archivo");
+        colArchivo.setCellValueFactory(cd -> new SimpleStringProperty(str(cd.getValue(), "originalName")));
+        colArchivo.setPrefWidth(210);
 
-    private VBox kpi(String labelText, String value) {
-        VBox v = new VBox(6);
-        v.setStyle(cardStyle());
-        v.setPrefWidth(160);
-        v.getChildren().add(label(value, "-fx-font-size:24px; -fx-font-weight:bold; -fx-text-fill:#f59e0b;"));
-        v.getChildren().add(label(labelText, "-fx-text-fill:#64748b; -fx-font-size:12px;"));
-        return v;
-    }
+        TableColumn<Map<String, Object>, String> colFecha = new TableColumn<>("Fecha");
+        colFecha.setCellValueFactory(cd -> new SimpleStringProperty(str(cd.getValue(), "finishedAt")));
+        colFecha.setPrefWidth(150);
 
-    private void loading(VBox content) {
-        content.getChildren().clear();
-        ProgressIndicator pi = new ProgressIndicator();
-        pi.setPrefSize(40, 40);
-        VBox v = new VBox(10, pi, label("Cargando...", "-fx-text-fill:#64748b;"));
-        v.setAlignment(Pos.CENTER);
-        content.getChildren().add(v);
-    }
+        TableColumn<Map<String, Object>, String> colEstado = new TableColumn<>("Estado");
+        colEstado.setCellValueFactory(cd -> new SimpleStringProperty(str(cd.getValue(), "status")));
+        colEstado.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(statusPill(item));
+                }
+            }
+        });
+        colEstado.setPrefWidth(110);
 
-    private void error(VBox content, String message) {
-        content.getChildren().clear();
-        Label l = label(message, "-fx-text-fill:#dc2626; -fx-wrap-text:true;");
-        content.getChildren().add(l);
-    }
+        TableColumn<Map<String, Object>, String> colValidas = new TableColumn<>("Válidas / Inválidas");
+        colValidas.setCellValueFactory(cd -> new SimpleStringProperty(lnum(cd.getValue(), "validRows")
+                + " / " + lnum(cd.getValue(), "invalidRows")));
+        colValidas.setPrefWidth(120);
 
-    private Label label(String text, String style) {
-        Label l = new Label(text);
-        l.setStyle(style);
-        return l;
-    }
+        TableColumn<Map<String, Object>, String> colTon = new TableColumn<>("Tonelaje");
+        colTon.setCellValueFactory(cd -> new SimpleStringProperty(str(cd.getValue(), "totalTonnage")));
+        colTon.setPrefWidth(90);
 
-    private String cardStyle() {
-        return "-fx-background-color:white; -fx-background-radius:12; -fx-padding:16; "
-                + "-fx-effect: dropshadow(gaussian, rgba(15,23,42,0.06), 10, 0.1, 0, 3);";
-    }
+        TableColumn<Map<String, Object>, String> colLey = new TableColumn<>("Ley Cu");
+        colLey.setCellValueFactory(cd -> new SimpleStringProperty(str(cd.getValue(), "avgGrade")));
+        colLey.setPrefWidth(90);
 
-    private void styleInput(TextField f) {
-        f.setStyle("-fx-background-radius:8; -fx-border-radius:8; "
-                + "-fx-border-color:#cbd5e1; -fx-padding:10 12; -fx-font-size:14px;");
-        f.setMaxWidth(Double.MAX_VALUE);
-    }
+        TableColumn<Map<String, Object>, String> colDur = new TableColumn<>("Duración (s)");
+        colDur.setCellValueFactory(cd -> new SimpleStringProperty(
+                cd.getValue().get("durationMs") instanceof Number n
+                        ? String.format("%.1f", n.longValue() / 1000.0) : "—"));
+        colDur.setPrefWidth(100);
 
-    private String primaryStyle() {
-        return "-fx-background-color:#f59e0b; -fx-text-fill:#1e293b; -fx-font-weight:bold; "
-                + "-fx-background-radius:8; -fx-padding:11 16 11 16; -fx-cursor:hand;";
-    }
+        TableColumn<Map<String, Object>, String> colUser = new TableColumn<>("Usuario");
+        colUser.setCellValueFactory(cd -> new SimpleStringProperty(str(cd.getValue(), "executedByName")));
+        colUser.setPrefWidth(120);
 
-    private String secondaryStyle() {
-        return "-fx-background-color:#059669; -fx-text-fill:white; -fx-font-weight:bold; "
-                + "-fx-background-radius:8; -fx-padding:11 16 11 16; -fx-cursor:hand;";
+        table.getColumns().addAll(colArchivo, colFecha, colEstado, colValidas, colTon, colLey, colDur, colUser);
+        table.getItems().addAll(rows);
+        table.setPrefHeight(320);
+
+        TextArea logArea = makeLogArea();
+        logArea.setPromptText("Selecciona una fila para ver el log de ejecución");
+
+        table.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
+            if (n == null) logArea.setText("");
+            else logArea.setText("### " + str(n, "originalName") + " (#" + str(n, "id") + ")\n\n" + logs(n));
+        });
+
+        nodes.add(table);
+        nodes.add(cardOnly("Log de ejecución", logArea));
+        return nodes;
     }
 
     // ===================== HELPERS DATOS =====================
@@ -522,7 +736,7 @@ public class DesktopApp extends Application {
 
     private String str(Map<String, Object> m, String key) {
         Object v = m.get(key);
-        return v == null ? "—" : String.valueOf(v);
+        return v == null ? "" : String.valueOf(v);
     }
 
     private double dnum(Map<String, Object> m, String key) {
@@ -537,6 +751,14 @@ public class DesktopApp extends Application {
 
     private String logs(Map<String, Object> r) {
         String l = str(r, "logs");
-        return l == null || l.equals("—") ? "" : l;
+        return l.isEmpty() ? "Sin log" : l;
+    }
+
+    private void showErrorAlert(String header, String body) {
+        Alert a = new Alert(Alert.AlertType.ERROR);
+        a.setTitle(header);
+        a.setHeaderText(header);
+        a.setContentText(body);
+        a.show();
     }
 }
