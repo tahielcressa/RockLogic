@@ -2,11 +2,11 @@
   <img src="assets/banner.svg" alt="RockLogic banner" />
 </p>
 
-<h1 align="center">⛏️ RockLogic</h1>
+<h1 align="center">🗻 RockLogic</h1>
 
 <p align="center">
   <b>Gestión inteligente de operaciones mineras</b><br/>
-  Plataforma completa para cargar datos de mina, validarlos, cruzarlos contra el catálogo de equipos y generar reportes profesionales — desde la nube o desde el escritorio.
+  Plataforma para cargar datos de mina, validarlos, cruzarlos contra el catálogo de equipos y generar reportes profesionales — desde el navegador o desde el escritorio.
 </p>
 
 <p align="center">
@@ -14,41 +14,81 @@
   <img src="https://img.shields.io/badge/Spring_Boot-3.5-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring Boot"/>
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white" alt="React"/>
   <img src="https://img.shields.io/badge/JavaFX-25-007396?style=for-the-badge&logo=java&logoColor=white" alt="JavaFX"/>
-  <img src="https://img.shields.io/badge/Bootstrap-Tailwind-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind"/>
+  <img src="https://img.shields.io/badge/Vite-6-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite"/>
+  <img src="https://img.shields.io/badge/Tailwind-4-38BDF8?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind"/>
 </p>
 
 ---
 
-## 🏭 ¿Qué es RockLogic?
+## ✨ ¿Qué es RockLogic?
 
-**RockLogic** es un MVP de gestión de operaciones mineras con tres frentes conectados al mismo corazón:
+**RockLogic** es un MVP de gestión de operaciones mineras con tres frentes conectados a un mismo corazón:
 
 | Interfaz | Tecnología | Descripción |
 |---|---|---|
-| 🌐 **Web** | React + Vite + Tailwind | Dashboard, carga de archivos, historial y gestión de usuarios |
-| 🖥️ **Escritorio** | JavaFX | Cliente de escritorio conectado a la misma API |
-| ⚙️ **API** | Spring Boot | Motor de validación, cruce de catálogo y reportes |
+| 🌐 **Web** | React + Vite + Tailwind | Dashboard con KPIs, carga de archivos, historial y gestión de usuarios |
+| 🖥️ **Escritorio** | JavaFX 25 | Cliente nativo de Windows con la misma experiencia y conexión a la misma API |
+| ⚙️ **API** | Spring Boot | Motor de validación, cruce de catálogo, reportes y administración |
 
-Cada empresa minera ve **solo sus propios datos** (multitenant) y cada operador trabaja con roles y permisos definidos.
+Cada empresa minera ve **solo sus propios datos** (multitenant) y cada usuario trabaja con roles y permisos definidos.
 
 ---
 
-## ✨ Funcionalidades estrella
+## 🚀 Funcionalidades
 
-- 📥 **Carga de datos** desde Excel (.xlsx) o CSV con validación campo a campo.
-- 🔄 **Validación y transformación**: fechas, turnos, rangos de tonelaje y ley de cobre.
-- 🗂️ **Cruce contra catálogo**: los equipos que no existen en tu inventario se marcan automáticamente.
-- 📊 **KPIs por zona y turno**: total de tonelaje, ley promedio y agrupaciones Norte/Sur/Este/Oeste/Centro.
+- 📤 **Carga de datos** desde Excel (`.xlsx`), `.xls` o CSV con validación campo a campo.
+- ✅ **Validación y transformación**: fechas, turnos, rangos de tonelaje y ley de cobre.
+- 🔗 **Cruce contra catálogo**: los equipos que no existen en el inventario se marcan automáticamente.
+- 📊 **KPIs por zona y estado**: tonelaje total, ley promedio, gráficos de barras y dona.
 - 📄 **Reportes profesionales** en Excel y PDF descargables.
-- 🕓 **Historial completo** con log de cada corrida y cada fila procesada.
+- 🕘 **Historial completo** con log de cada corrida y cada fila procesada.
 - 📧 **Notificaciones por email** opcionales con el resumen del proceso.
 - 👥 **Multi-usuario y multi-tenant** con roles ADMIN / OPERATOR.
+- 🎨 **Diseño corporativo rediseñado**: branding RockLogic, paleta slate/ámbar y tipografía Inter.
 
 ---
 
-## 🚀 Arranque rápido
+## 📸 Capturas del producto
 
-> Requisitos: JDK 25 (Temurin), Node.js 24+, Maven 3.9.
+| Acceso seguro | Tablero ejecutivo |
+|---|---|
+| ![Login](presentation/assets/1-login.png) | ![Dashboard](presentation/assets/2-dashboard.png) |
+
+| Carga y procesamiento | Historial y trazabilidad |
+|---|---|
+| ![Cargar](presentation/assets/3-cargar.png) | ![Historial](presentation/assets/4-historial.png) |
+
+| Administración |
+|---|
+| ![Usuarios](presentation/assets/5-usuarios.png) |
+
+> Todas las capturas corresponden a la app corriendo contra datos reales del MVP.
+
+---
+
+## 🗂️ Estructura del proyecto
+
+```
+RockLogic/
+├── backend/            # API REST Spring Boot (puerto 8080)
+├── frontend/           # Aplicación web React + Vite + Tailwind (puerto 5173)
+├── desktop/            # Cliente de escritorio JavaFX (mismo modelo de la API)
+├── scripts/            # Lanzadores run-backend / run-frontend / run-desktop
+├── presentation/       # Material comercial y diagramas
+│   ├── RockLogic-presentacion-comercial.pptx   # Deck comercial de 16 slides
+│   ├── assets/                                 # Capturas reales del producto
+│   └── diagrams/
+│       ├── recorrido-sistema.drawio            # Diagrama editable (draw.io)
+│       ├── recorrido-sistema.png               # Exportación a imagen
+│       └── recorrido-sistema.vsdx              # Exportación compatible con Visio
+└── assets/             # Recursos del README
+```
+
+---
+
+## ▶️ Arranque rápido
+
+> Requisitos: JDK 25 (Temurin/Adoptium), Node.js 20+, Maven 3.9.
 
 ### 1. Backend — API en `:8080`
 ```batch
@@ -78,77 +118,62 @@ npm install && npm run dev
 mvn javafx:run
 ```
 
+> Los `.bat` usan `ping -n 4 127.0.0.1 >nul` en lugar de `timeout` para evitar errores de redirección en consolas con encoding por defecto.
+
 ---
 
-## 🔑 Cuentas de prueba
+## 🔐 Credenciales de demostración
 
-| Email | Contraseña | Rol | Empresa |
+| Empresa | Rol | Correo | Contraseña |
 |---|---|---|---|
-| `admin@mineraandina.com` | `admin123` | **ADMIN** | Minera Andina SAC |
-| `operador@mineraandina.com` | `oper123` | OPERATOR | Minera Andina SAC |
-| `admin@minadelsur.com` | `admin123` | **ADMIN** | Mina del Sur Ltda |
+| Minera Andina | Administrador | `admin@mineraandina.com` | `admin123` |
+| Minera Andina | Operador | `operador@mineraandina.com` | `oper123` |
+| Minera del Sur | Administrador | `admin@minadelsur.com` | `admin123` |
 
 ---
 
-## 📂 Formato de archivos
+## 🛡️ Seguridad
 
-CSV o Excel con las columnas:
+- Autenticación con token **JWT** (validez de 24 h) en todos los endpoints.
+- Roles **ADMIN** y **OPERATOR** con capacidades diferenciadas.
+- **Aislamiento por empresa**: cada tenant accede únicamente a sus datos.
+- Trazabilidad: toda corrida de procesamiento queda registrada con estado y log.
 
+---
+
+## 👨‍💻 Configuración de IDE (IntelliJ)
+
+1. Abrir `desktop/` como proyecto Maven.
+2. Registrar el JDK 25 del sistema: `Project Structure → SDKs → Add JDK`
+   (ruta típica: `C:\Program Files\Eclipse Adoptium\jdk-25.0.4.101-hotspot`).
+3. El proyecto ya declara Java 25, JavaFX 25.0.2 y Jackson 2.17.2 en `desktop/pom.xml`.
+
+Los diagramas se editan con **draw.io** (gratuito) y el recorrido del sistema también está exportado en formato **`.vsdx`** para importar en Microsoft Visio.
+
+---
+
+## ✍️ Material comercial
+
+Dentro de `presentation/` está el deck **RockLogic-presentacion-comercial.pptx** (16 slides, orientado a negocio) construido con las capturas reales del producto y el diagrama de recorrido del sistema. Para regenerarlo:
+
+```bash
+python presentation/build_pptx.py   # requiere python-pptx
 ```
-fecha; turno; zona; equipo; tonelaje; ley_cu; estado
-```
 
-Reglas de negocio aplicadas en el cruce:
+---
 
-| Campo | Regla |
+## 🧰 Stack
+
+| Capa | Tecnología |
 |---|---|
-| `fecha` | `12/09/2026` o `2026-09-12` |
-| `turno` | `A`, `B` o `C` |
-| `zona` | Norte, Sur, Este, Oeste, Centro |
-| `equipo` | Debe existir en el catálogo de la empresa |
-| `tonelaje` | > 0 y < 100000 (acepta coma o punto) |
-| `ley_cu` | Entre 0 y 100 |
-
-💡 Las filas inválidas **no rompen el proceso**: se marcan con el motivo y el resto se procesa normalmente.
+| Backend | Spring Boot 3.5, Spring Security, JWT, H2 (archivo), Jakarta Mail |
+| Frontend | React 19, Vite 6, Tailwind 4, Recharts |
+| Escritorio | JavaFX 25, Jackson |
+| Diagramas | draw.io (+ exportación .vsdx para Visio) |
+| Presentación | python-pptx |
 
 ---
 
-## 🔌 Endpoints principales
+## 📄 Licencia
 
-| Método | Ruta | Uso |
-|---|---|---|
-| `POST` | `/api/auth/login` | Autenticación JWT |
-| `POST` | `/api/uploads` | Subir CSV/Excel (multipart) |
-| `POST` | `/api/uploads/{id}/run` | Ejecutar validación + cruce |
-| `GET` | `/api/runs` | Historial de corridas |
-| `GET` | `/api/runs/{id}/download/excel` | Reporte Excel |
-| `GET` | `/api/runs/{id}/download/pdf` | Reporte PDF |
-| `GET` | `/api/dashboard` | KPIs y resumen |
-| `GET/POST` | `/api/admin/users` | Usuarios (ADMIN) |
-| `GET/POST` | `/api/admin/equipments` | Catálogo de equipos |
-
----
-
-## 🗂️ Estructura del proyecto
-
-```
-los menudos desarrollo/
-├── backend/         # API REST Spring Boot (Java 25)
-│   └── src/main/java/com/minera/mvp/
-│       ├── controller/   # Endpoints REST
-│       ├── service/      # Procesos, reportes, validación, seed
-│       ├── security/     # JWT y configuración
-│       ├── repo/         # Acceso a datos (H2)
-│       └── model/        # Entidades
-├── frontend/        # Web React + Vite + Tailwind
-│   └── src/pages/   # Login, Dashboard, Upload, History, Users
-├── desktop/         # Cliente JavaFX
-│   └── src/main/java/com/minera/mvp/desktop/
-└── scripts/         # run-backend / run-frontend / run-desktop
-```
-
----
-
-<p align="center">
-  <sub>Hecho con ⛏️ por el equipo de Los Menudos Desarrollo · MVP RockLogic</sub>
-</p>
+Proyecto de demostración (MVP). Datos de ejemplo en `backend/sample-data/`.
